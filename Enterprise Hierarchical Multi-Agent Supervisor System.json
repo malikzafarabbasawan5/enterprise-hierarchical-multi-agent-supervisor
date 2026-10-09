@@ -1,0 +1,481 @@
+{
+  "name": "Enterprise Hierarchical Multi-Agent Supervisor System",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "supervisor-orchestration-trigger",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        -496
+      ],
+      "id": "8eb98d63-98ea-4e27-bb85-64ddfc0d00af",
+      "name": "Webhook node ka naam yeh set kar lein:",
+      "webhookId": "f65126c5-ad79-4ed2-9dc9-551e42b65a7b"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are the Master Orchestrator & System Supervisor.\n\nYour job is to break down complex enterprise requests into 3 distinct operational tasks:\n1. Research & Context Extraction Task\n2. Analytical / Data Processing Task\n3. Synthesis & Final Deliverable Task\n\nAnalyze the incoming user request and output a structured plan for sub-agents.\n\nReturn strictly raw JSON format without markdown backticks:\n{\n  \"task_id\": \"TASK-8099\",\n  \"original_request\": \"USER_REQUEST_HERE\",\n  \"research_instructions\": \"Detailed instructions for Sub-Agent A\",\n  \"analysis_instructions\": \"Detailed instructions for Sub-Agent B\",\n  \"synthesis_instructions\": \"Detailed instructions for Sub-Agent C\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -432,
+        -272
+      ],
+      "id": "ee5b86c6-b458-44bf-9378-ffb6277ce54f",
+      "name": "02 - Master Supervisor Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        -32
+      ],
+      "id": "fdd5d519-5cf4-4494-b105-15676cdb75a6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KskgYheGpZvh6WAW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let responseText = $input.first().json.output || $input.first().json.text || \"\";\nresponseText = responseText.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n\nlet plan = {};\ntry {\n  plan = JSON.parse(responseText);\n} catch (e) {\n  plan = {\n    task_id: \"TASK-8099\",\n    original_request: $('01 - Supervisor Intake Webhook').first().json.body?.request || \"Execute multi-stage analysis\",\n    research_instructions: \"Extract core technical parameters and context.\",\n    analysis_instructions: \"Perform strategic evaluation and risk scoring.\",\n    synthesis_instructions: \"Consolidate findings into enterprise summary.\"\n  };\n}\n\nreturn [{ json: plan }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -272
+      ],
+      "id": "884d4bc5-4de4-4a52-8fc1-7c28a7f28eeb",
+      "name": "03 - Parse Supervisor Plan"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are Sub-Agent A (Research & Context Specialist).\n\nTask Assignment:\n{{ $json.research_instructions }}\n\nContext/Request:\n{{ $json.original_request }}\n\nExecute detailed research and return raw findings in JSON format without markdown:\n{\n  \"agent_type\": \"RESEARCH\",\n  \"key_findings\": [\"Point 1\", \"Point 2\"],\n  \"risk_factors\": [\"Risk A\", \"Risk B\"]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        368,
+        -496
+      ],
+      "id": "6130c327-e2dd-47cf-afe3-a197948bffee",
+      "name": "04A - Sub-Agent Research"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -320
+      ],
+      "id": "69c8e4f9-8338-4b06-a48f-98b2b6358bca",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KskgYheGpZvh6WAW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are Sub-Agent B (Data & Strategic Analyst).\n\nTask Assignment:\n{{ $json.analysis_instructions }}\n\nContext/Request:\n{{ $json.original_request }}\n\nExecute strategic evaluation and return results in JSON format without markdown:\n{\n  \"agent_type\": \"ANALYTICS\",\n  \"feasibility_score\": 88,\n  \"cost_benefit_summary\": \"Detailed financial/operational impact\",\n  \"strategic_recommendations\": [\"Rec 1\", \"Rec 2\"]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        -272
+      ],
+      "id": "a1968a6e-174e-488e-947a-cbd49a455d42",
+      "name": "04B - Sub-Agent Analytics"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        -64
+      ],
+      "id": "41b45a09-05cb-49bc-b539-549c3846d29e",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KskgYheGpZvh6WAW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are Sub-Agent C (Deliverable Synthesizer).\n\nTask Assignment:\n{{ $json.synthesis_instructions }}\n\nContext/Request:\n{{ $json.original_request }}\n\nDraft executive deliverable structure in JSON format without markdown:\n{\n  \"agent_type\": \"SYNTHESIS\",\n  \"executive_summary\": \"High level overview statement\",\n  \"action_plan_steps\": [\"Step 1\", \"Step 2\", \"Step 3\"]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        -48
+      ],
+      "id": "3d00932f-cb0b-45b7-a8c4-40fdd0449f89",
+      "name": "04C - Sub-Agent Synthesis"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        160
+      ],
+      "id": "2713ab5c-f0e8-4f34-8560-7406de03250f",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KskgYheGpZvh6WAW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nlet research = {};\nlet analytics = {};\nlet synthesis = {};\n\nitems.forEach(item => {\n  let text = item.json.output || item.json.text || \"\";\n  text = text.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n  \n  try {\n    const parsed = JSON.parse(text);\n    if (parsed.agent_type === \"RESEARCH\") research = parsed;\n    else if (parsed.agent_type === \"ANALYTICS\") analytics = parsed;\n    else if (parsed.agent_type === \"SYNTHESIS\") synthesis = parsed;\n  } catch (e) {\n    // Fallback if parsing fails\n  }\n});\n\nreturn [{\n  json: {\n    aggregated_at: new Date().toISOString(),\n    research_data: research,\n    analytics_data: analytics,\n    synthesis_data: synthesis\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        -288
+      ],
+      "id": "e6be9d32-bac3-4e7a-9b6b-e6b912d8669e",
+      "name": "05 - Aggregate Sub-Agent Outputs"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Principal Quality Assurance Auditor.\n\nEvaluate the aggregated payload from Sub-Agent A (Research), Sub-Agent B (Analytics), and Sub-Agent C (Synthesis).\n\nAggregated Payload:\n{{ JSON.stringify($json) }}\n\nValidation Criteria:\n1. All 3 sub-agent sections (research_data, analytics_data, synthesis_data) must contain valid, non-empty data.\n2. The findings must directly address the original request logic.\n\nReturn strictly raw JSON format without markdown backticks:\n{\n  \"qa_passed\": true,\n  \"qa_score\": 92,\n  \"review_summary\": \"All three sub-agent deliverables meet enterprise quality standards.\",\n  \"rejection_reason\": null\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        -288
+      ],
+      "id": "a11d2eb9-101f-45d1-9c3a-f25fc9c0eb9a",
+      "name": "06 - QA Reviewer Agent",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        -64
+      ],
+      "id": "f3f94c9b-bf4c-4b4d-a4ab-0b19994f66b0",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KskgYheGpZvh6WAW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let responseText = $input.first().json.output || $input.first().json.text || \"\";\nresponseText = responseText.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n\nlet qaData = {};\ntry {\n  qaData = JSON.parse(responseText);\n} catch (e) {\n  qaData = {\n    qa_passed: false,\n    qa_score: 0,\n    review_summary: \"Failed to parse QA output\",\n    rejection_reason: \"JSON formatting error during review\"\n  };\n}\n\nconst aggregated = $('05 - Aggregate Sub-Agent Outputs').first().json;\n\nreturn [{\n  json: {\n    ...aggregated,\n    qa: qaData\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        -288
+      ],
+      "id": "576de4b4-c2f0-4688-940b-db45583bbe26",
+      "name": "07 - Parse QA Findings"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b8fd6b42-079f-4561-90a1-9600fa74be90",
+              "leftValue": "={{ $json.qa.qa_passed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1744,
+        -288
+      ],
+      "id": "f740dcc6-465e-4ba4-aac2-6060c21612c7",
+      "name": "08 - Is QA Approved?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"SUCCESS\",\n  \"qa_score\": {{ $json.qa.qa_score }},\n  \"review_summary\": \"{{ $json.qa.review_summary }}\",\n  \"deliverables\": {\n    \"research\": {{ JSON.stringify($json.research_data) }},\n    \"analytics\": {{ JSON.stringify($json.analytics_data) }},\n    \"synthesis\": {{ JSON.stringify($json.synthesis_data) }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2032,
+        -304
+      ],
+      "id": "1e1688b3-2c06-41bf-a25c-92cac3e9faea",
+      "name": "09 - Final Supervisor Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook node ka naam yeh set kar lein:": {
+      "main": [
+        [
+          {
+            "node": "02 - Master Supervisor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "02 - Master Supervisor Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02 - Master Supervisor Agent": {
+      "main": [
+        [
+          {
+            "node": "03 - Parse Supervisor Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "03 - Parse Supervisor Plan": {
+      "main": [
+        [
+          {
+            "node": "04B - Sub-Agent Analytics",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "04A - Sub-Agent Research",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "04C - Sub-Agent Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "04A - Sub-Agent Research",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04B - Sub-Agent Analytics": {
+      "main": [
+        [
+          {
+            "node": "05 - Aggregate Sub-Agent Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "04B - Sub-Agent Analytics",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "04C - Sub-Agent Synthesis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04A - Sub-Agent Research": {
+      "main": [
+        [
+          {
+            "node": "05 - Aggregate Sub-Agent Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04C - Sub-Agent Synthesis": {
+      "main": [
+        [
+          {
+            "node": "05 - Aggregate Sub-Agent Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "05 - Aggregate Sub-Agent Outputs": {
+      "main": [
+        [
+          {
+            "node": "06 - QA Reviewer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "06 - QA Reviewer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "06 - QA Reviewer Agent": {
+      "main": [
+        [
+          {
+            "node": "07 - Parse QA Findings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "07 - Parse QA Findings": {
+      "main": [
+        [
+          {
+            "node": "08 - Is QA Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "08 - Is QA Approved?": {
+      "main": [
+        [
+          {
+            "node": "09 - Final Supervisor Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "02 - Master Supervisor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a16c677f-2b2f-4243-a02f-97c4c41c45af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa2fd4966574db7289205074e7b81781b706d11259d5e83c66766e93f08e3704"
+  },
+  "nodeGroups": [],
+  "id": "Jn1wvyUe4gp4d2LG",
+  "tags": []
+}
